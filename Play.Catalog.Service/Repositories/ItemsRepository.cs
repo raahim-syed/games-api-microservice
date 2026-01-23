@@ -7,7 +7,8 @@ using Play.Catalog.Service.Entities;
 
 namespace Play.Catalog.Service.Repositories
 {
-    public class ItemsRepository
+
+    public class ItemsRepository : IItemsRepository
     {
         private const string collectionName = "items";
 
@@ -17,13 +18,12 @@ namespace Play.Catalog.Service.Repositories
         // Filter definition builder to help create filters
         private readonly FilterDefinitionBuilder<Item> filterBuilder = Builders<Item>.Filter;
 
-        public ItemsRepository()
+        public ItemsRepository(IMongoDatabase database)
         {
             // Initialize Client and get database and collection
-            var MongoClient = new MongoClient("mongodb://localhost:27017"); 
+            // var MongoClient = new MongoClient("mongodb://localhost:27017");
 
-            var database  = MongoClient.GetDatabase("Catalog");
-
+            // var database = MongoClient.GetDatabase("Catalog");
 
             dbCollection = database.GetCollection<Item>(collectionName);
         }
@@ -43,20 +43,20 @@ namespace Play.Catalog.Service.Repositories
 
         public async Task<Item> CreateItemAsync(Item entity)
         {
-            if(entity == null)
+            if (entity == null)
             {
                 throw new ArgumentNullException(nameof(entity));
             }
 
             await dbCollection.InsertOneAsync(entity);
-            
+
             return entity;
-        } 
+        }
 
 
         public async Task<Item> UpdateItemAsync(Item entity)
         {
-            if(entity == null)
+            if (entity == null)
             {
                 throw new ArgumentNullException(nameof(entity));
             }
