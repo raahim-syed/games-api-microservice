@@ -39,8 +39,8 @@ namespace Play.Catalog.Service
             BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer(BsonType.String));
 
             serviceSettings = Configuration.GetSection(nameof(ServiceSettings)).Get<ServiceSettings>();
-
-            // Dependency Injection --------------------------------- 
+            
+            // Adding MongoDB client as a Singleton since it is thread-safe and can be shared across the application
             services.AddSingleton(serviceProvider =>
             {
                 var mongoDbSettings = Configuration.GetSection(nameof(MongoDbSettings)).Get<MongoDbSettings>();
@@ -50,10 +50,14 @@ namespace Play.Catalog.Service
                 return mongoClient.GetDatabase(serviceSettings.ServiceName);
             });
 
+            // Adding Repository as a Singleton since it doesn't have any state and can be shared across the application
             services.AddSingleton<IItemsRepository, ItemsRepository>();
 
             services.AddControllers(options =>
             {
+                // By default, ASP.NET Core adds "Async" suffix to action names that return Task or Task<T>. 
+                // This can be confusing for clients consuming the API. 
+                // Setting this option to false will prevent the framework from adding "Async" suffix to action names.
                 options.SuppressAsyncSuffixInActionNames = false;
             });  
             services.AddSwaggerGen(c =>
