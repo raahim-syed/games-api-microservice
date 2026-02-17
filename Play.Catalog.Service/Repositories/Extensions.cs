@@ -37,15 +37,11 @@ namespace Play.Catalog.Service.Repositories
 
         public static IServiceCollection AddMongoRepository<T>(this IServiceCollection services, string collectionName) where T : IEntity
         {
-            services.AddScoped(serviceProvider =>
+            services.AddSingleton<IRepository<T>>(serviceProvider =>
             {
                 var database = serviceProvider.GetRequiredService<IMongoDatabase>();
                 return new MongoRepository<T>(database, collectionName);
             });
-
-            services.AddScoped<IRepository<T>>(serviceProvider =>
-                serviceProvider.GetRequiredService<MongoRepository<T>>()
-            );
 
             return services;
         }
