@@ -23,9 +23,9 @@ namespace Play.Catalog.Service.Controllers
         //     new ItemDto(Guid.NewGuid(), "Sword", "Deals a moderate amount of damage", 20, DateTimeOffset.UtcNow)
         // };
 
-        private readonly IItemsRepository repository;
+        private readonly IRepository<Item> repository;
 
-        public ItemsController(IItemsRepository repository)
+        public ItemsController(IRepository<Item> repository)
         {
             this.repository = repository;
         }
@@ -42,7 +42,7 @@ namespace Play.Catalog.Service.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ItemDto>> GetById (Guid id)
         {
-            var item = await repository.GetItemByIdAsync(id);
+            var item = await repository.GetByIdAsync(id);
 
             if(item == null)
             {
@@ -63,7 +63,7 @@ namespace Play.Catalog.Service.Controllers
                 CreatedDate= DateTimeOffset.UtcNow
             };
             
-            await repository.CreateItemAsync(item);
+            await repository.CreateAsync(item);
 
             return CreatedAtAction(nameof(GetById), new { id = item.Id }, item);
         }
@@ -71,7 +71,7 @@ namespace Play.Catalog.Service.Controllers
         [HttpPut("{id}")]
         public  async Task<ActionResult> Put(Guid id, UpdateItemDto updateItemDto)
         {
-            var item = (await repository.GetItemByIdAsync(id));
+            var item = await repository.GetByIdAsync(id);
             if (item == null)
             {
                 return NotFound();
@@ -86,7 +86,7 @@ namespace Play.Catalog.Service.Controllers
                 CreatedDate = item.CreatedDate
             };
 
-            await repository.UpdateItemAsync(updatedItem);
+            await repository.UpdateAsync(updatedItem);
 
             return Ok("Item updated successfully with id: " + id);
         }
@@ -94,13 +94,13 @@ namespace Play.Catalog.Service.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(Guid id)
         {
-            var item = (await repository.GetItemByIdAsync(id));
+            var item = (await repository.GetByIdAsync(id));
             if (item == null)
             {
                 return NotFound();
             }
 
-            await repository.DeleteItemAsync(id);
+            await repository.DeleteAsync(id);
 
             return Ok("Item deleted successfully with id: " + id);
         }

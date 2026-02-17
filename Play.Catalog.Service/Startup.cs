@@ -15,6 +15,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
+using Play.Catalog.Service.Entities;
 using Play.Catalog.Service.Repositories;
 using Play.Catalog.Service.Settings;
 
@@ -33,25 +34,12 @@ namespace Play.Catalog.Service
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-            // Convert Incoming Guid and DateTimeOffset to string for storing in MongoDB
-            BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
-            BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer(BsonType.String));
-
-            serviceSettings = Configuration.GetSection(nameof(ServiceSettings)).Get<ServiceSettings>();
             
-            // Adding MongoDB client as a Singleton since it is thread-safe and can be shared across the application
-            services.AddSingleton(serviceProvider =>
-            {
-                var mongoDbSettings = Configuration.GetSection(nameof(MongoDbSettings)).Get<MongoDbSettings>();
+            // Mongo Client
+            services.AddMongo(Configuration);
 
-                var mongoClient = new MongoClient(mongoDbSettings.ConnectionString);
-
-                return mongoClient.GetDatabase(serviceSettings.ServiceName);
-            });
-
-            // Adding Repository as a Singleton since it doesn't have any state and can be shared across the application
-            services.AddSingleton<IItemsRepository, ItemsRepository>();
+            // Mongo Repository
+            services.AddMongoRepository<Item>("items");
 
             services.AddControllers(options =>
             {
